@@ -36,12 +36,4 @@ El código se encuentra organizado en las siguientes secciones:
 4. **Función Principal (`main`):**  
    Interactúa con el usuario, solicita los números a operar, ejecuta la máquina de Turing para cada operación y muestra los resultados tanto en notación unaria como en decimal.
 
-## Requisitos
 
-- Python 3.x
-
-## Instrucciones de Uso
-
-1. Clona el repositorio:
-   ```bash
-   git clone https://github.com/tu_usuario/tu_repositorio.git
