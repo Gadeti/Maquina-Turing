@@ -193,14 +193,5 @@ El bloque final utiliza la condición `if _name_ == "_main_":` para garantizar q
 - **Limitaciones del Modelo:**  
   La implementación de algunas operaciones (como la función seno) es simplificada y no refleja completamente el comportamiento matemático esperado para todos los ángulos.
 
----
-
-## Licencia
-
-Este proyecto se distribuye bajo [inserte aquí la licencia correspondiente] y fue desarrollado para fines educativos y de demostración en el uso de Máquinas de Turing para operaciones aritméticas en notación unaria.
-
----
-
-Este README.md proporciona una guía completa sobre la estructura y funcionamiento del código, permitiendo a los usuarios y desarrolladores entender y extender la implementación de la Máquina de Turing para operaciones aritméticas en notación unaria.
 
 
