@@ -61,7 +61,7 @@ class TuringMachine:
                 self.head = 0
 
             self.state = new_state
-            self.print_tape()
+            self.print_tape()  # Muestra el recorrido del cabezal en la cinta
         else:
             self.state = self.reject_state
 
@@ -275,90 +275,103 @@ def division_unary(a, b):
     return quotient, len(quotient)
 
 # -----------------------------
-# Sección 4: Función Principal
+# Sección 4: Función Principal con Menú
 # -----------------------------
 def main():
-    print("=== Operaciones en Notación Unaria utilizando Máquina de Turing ===\n")
-
-    # Suma
-    print(">> Suma en Notación Unaria:")
-    a = int(input("Ingrese el primer número (entero positivo): "))
-    b = int(input("Ingrese el segundo número (entero positivo): "))
-    maquina_suma = addition_unary_machine(a, b)
-    if maquina_suma.run():
-        cinta_final = ''.join(maquina_suma.tape)
-        resultado_unario = cinta_final.replace("_", "")
-        print("Cinta final:", cinta_final)
-        print("Resultado en notación unaria:", resultado_unario)
-        print("Resultado en decimal:", len(resultado_unario))
-    else:
-        print("La máquina rechazó la entrada.")
-    print("\n" + "-"*50 + "\n")
-
-    # Resta
-    print(">> Resta en Notación Unaria:")
-    x = int(input("Ingrese el minuendo (entero positivo): "))
-    y = int(input("Ingrese el sustraendo (entero positivo): "))
-    resultado_resta = resta(x, y)
-    if resultado_resta:
-        resultado_unario, resultado_decimal = resultado_resta
-        print("Resultado en notación unaria:", resultado_unario)
-        print("Resultado en decimal:", resultado_decimal)
-    print("\n" + "-"*50 + "\n")
-
-    # Multiplicación
-    print(">> Multiplicación en Notación Unaria (suma repetida):")
-    a = int(input("Ingrese el primer número (entero positivo): "))
-    b = int(input("Ingrese el segundo número (entero positivo): "))
-    resultado_unario, resultado_decimal = multiplication_unary_machine(a, b)
-    print("Resultado en notación unaria:", resultado_unario)
-    print("Resultado en decimal:", resultado_decimal)
-    print("\n" + "-"*50 + "\n")
-
-    # División
-    print(">> División en Notación Unaria:")
-    try:
-        a = int(input("Ingrese el numerador (entero positivo): "))
-        b = int(input("Ingrese el denominador (entero positivo distinto de 0): "))
-        if a < 1 or b < 1:
-            print("Solo se permiten números enteros positivos.")
+    while True:
+        print("\n=== Máquina de Turing para Operaciones Aritméticas en Notación Unaria ===")
+        print("Seleccione la operación a realizar:")
+        print("1. Suma")
+        print("2. Resta")
+        print("3. Multiplicación (suma repetida)")
+        print("4. División")
+        print("5. Potenciación")
+        print("6. Aproximación del Logaritmo Natural (ln)")
+        print("7. Función Seno (simplificada)")
+        print("8. Raíz Cuadrada")
+        print("9. Salir")
+        opcion = input("Ingrese el número de la opción: ")
+        
+        if opcion == '9':
+            print("Saliendo del programa.")
+            break
+        
+        if opcion == '1':
+            print("\n>> Suma en Notación Unaria:")
+            a = int(input("Ingrese el primer número (entero positivo): "))
+            b = int(input("Ingrese el segundo número (entero positivo): "))
+            maquina = addition_unary_machine(a, b)
+            if maquina.run():
+                final_tape = ''.join(maquina.tape)
+                result_unary = final_tape.replace("_", "")
+                result_decimal = len(result_unary)
+                print("Resultado en notación unaria:", result_unary)
+                print("Resultado en decimal:", result_decimal)
+            else:
+                print("La máquina rechazó la entrada.")
+        
+        elif opcion == '2':
+            print("\n>> Resta en Notación Unaria:")
+            x = int(input("Ingrese el minuendo (entero positivo): "))
+            y = int(input("Ingrese el sustraendo (entero positivo): "))
+            resultado = resta(x, y)
+            if resultado:
+                result_unary, result_decimal = resultado
+                print("Resultado en notación unaria:", result_unary)
+                print("Resultado en decimal:", result_decimal)
+        
+        elif opcion == '3':
+            print("\n>> Multiplicación en Notación Unaria (suma repetida):")
+            a = int(input("Ingrese el primer número (entero positivo): "))
+            b = int(input("Ingrese el segundo número (entero positivo): "))
+            result_unary, result_decimal = multiplication_unary_machine(a, b)
+            print("Resultado en notación unaria:", result_unary)
+            print("Resultado en decimal:", result_decimal)
+        
+        elif opcion == '4':
+            print("\n>> División en Notación Unaria:")
+            a = int(input("Ingrese el numerador (entero positivo): "))
+            b = int(input("Ingrese el denominador (entero positivo distinto de 0): "))
+            if a < 1 or b < 1:
+                print("Solo se permiten números enteros positivos.")
+            else:
+                q_unario, q_decimal = division_unary(a, b)
+                if q_unario is not None:
+                    print("Cociente en notación unaria:", q_unario)
+                    print("Cociente en decimal:", q_decimal)
+        
+        elif opcion == '5':
+            print("\n>> Potenciación en Notación Unaria:")
+            base = int(input("Ingrese la base (entero positivo): "))
+            exp = int(input("Ingrese el exponente (entero no negativo): "))
+            result_unary, result_decimal = power_unary(base, exp)
+            print("Resultado en notación unaria:", result_unary)
+            print("Resultado en decimal:", result_decimal)
+        
+        elif opcion == '6':
+            print("\n>> Aproximación del Logaritmo Natural (ln) en Notación Unaria:")
+            x_val = int(input("Ingrese un número (entero positivo mayor o igual a 1): "))
+            log_unario, log_val, ln_approx = log_unary(x_val)
+            print("Representación unaria de floor(log₂(x)):", log_unario, "-> valor =", log_val)
+            print("Aproximación entera de ln(x):", ln_approx)
+        
+        elif opcion == '7':
+            print("\n>> Función Seno en Notación Unaria (versión simplificada):")
+            angle = float(input("Ingrese un ángulo en grados (número positivo): "))
+            maquina_sin, sin_value = sin_unary(angle)
+            final_tape = ''.join(maquina_sin.tape)
+            print("Cinta final:", final_tape)
+            print("Valor de sin(angle):", sin_value)
+        
+        elif opcion == '8':
+            print("\n>> Raíz Cuadrada (cálculo mediante sumas de impares):")
+            sqrt_turing_machine()
+        
         else:
-            q_unario, q_decimal = division_unary(a, b)
-            if q_unario is not None:
-                print("Cociente en notación unaria:", q_unario)
-                print("Cociente en decimal:", q_decimal)
-    except ValueError:
-        print("Entrada inválida. Debe ser un número entero.")
-    print("\n" + "-"*50 + "\n")
-
-    # Potenciación
-    print(">> Potenciación en Notación Unaria:")
-    base = int(input("Ingrese la base (entero positivo): "))
-    exp = int(input("Ingrese el exponente (entero no negativo): "))
-    resultado_unario, resultado_decimal = power_unary(base, exp)
-    print("Resultado en notación unaria:", resultado_unario)
-    print("Resultado en decimal:", resultado_decimal)
-    print("\n" + "-"*50 + "\n")
-
-    # Logaritmo Natural Aproximado
-    print(">> Aproximación del Logaritmo Natural (ln) en Notación Unaria:")
-    x_val = int(input("Ingrese un número (entero positivo mayor o igual a 1): "))
-    log_unario, log_val, ln_approx = log_unary(x_val)
-    print("Representación unaria de floor(log₂(x)):", log_unario, "-> valor =", log_val)
-    print("Aproximación entera de ln(x):", ln_approx)
-    print("\n" + "-"*50 + "\n")
-
-    # Función Seno Simplificada
-    print(">> Función Seno en Notación Unaria (versión simplificada):")
-    angle = float(input("Ingrese un ángulo en grados (número positivo): "))
-    maquina_sin, sin_value = sin_unary(angle)
-    print("Cinta final:", ''.join(maquina_sin.tape))
-    print("Valor de sin(angle):", sin_value)
-    print("\n" + "-"*50 + "\n")
-
-    # Raíz Cuadrada
-    print(">> Raíz Cuadrada (cálculo mediante sumas de impares):")
-    sqrt_turing_machine()
+            print("Opción no válida. Intente nuevamente.")
+        
+        print("\n" + "-"*50 + "\n")
 
 if __name__ == "__main__":
     main()
+
