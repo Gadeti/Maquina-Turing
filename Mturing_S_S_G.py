@@ -1,42 +1,61 @@
-#Integrantes:   Sergio Morales
-#               Gabriela Delgado
-#               Samuel Ramirez
+# ------------------------------------------------------------
+# Módulo: Turing Machine para Operaciones Aritméticas en Notación Unaria
+# Integrantes: Sergio Morales, Gabriela Delgado, Samuel Ramirez
+# ------------------------------------------------------------
 
-
-# ---------------------------------------------------------------------
-# Función para convertir un número entero a notación unaria (cadena de '1's)
-# ---------------------------------------------------------------------
+# -----------------------------
+# Sección 1: Utilidades
+# -----------------------------
 def decimal_a_unario(n):
+    """
+    Convierte un entero a su representación en notación unaria.
+    Ejemplo: 3 -> "111"
+    """
     return "1" * n
 
-# ---------------------------------------------------------------------
-# Clase TuringMachine: Simulación de una Máquina de Turing general
-# ---------------------------------------------------------------------
+# -----------------------------
+# Sección 2: Clase TuringMachine
+# -----------------------------
 class TuringMachine:
     def __init__(self, tape, transition_function, initial_state, accept_state, reject_state, blank_symbol='_'):
-        self.tape = list(tape)            # La cinta se representa como una lista de símbolos.
-        self.head = 0                     # Posición inicial del cabezal.
-        self.state = initial_state        # Estado inicial.
-        self.transition_function = transition_function  # Tabla de transiciones.
-        self.accept_state = accept_state  # Estado de aceptación.
-        self.reject_state = reject_state  # Estado de rechazo.
-        self.blank_symbol = blank_symbol  # Símbolo en blanco.
+        """
+        Inicializa la máquina de Turing.
+        
+        Parámetros:
+          tape: Cadena inicial de la cinta.
+          transition_function: Diccionario con las transiciones {(estado, símbolo): (nuevo_estado, nuevo_símbolo, movimiento)}
+          initial_state: Estado inicial.
+          accept_state: Estado de aceptación.
+          reject_state: Estado de rechazo.
+          blank_symbol: Símbolo en blanco.
+        """
+        self.tape = list(tape)
+        self.head = 0
+        self.state = initial_state
+        self.transition_function = transition_function
+        self.accept_state = accept_state
+        self.reject_state = reject_state
+        self.blank_symbol = blank_symbol
 
     def step(self):
+        # Lee el símbolo actual o usa el símbolo en blanco si se excede la longitud
         symbol = self.tape[self.head] if self.head < len(self.tape) else self.blank_symbol
         if (self.state, symbol) in self.transition_function:
             new_state, new_symbol, move = self.transition_function[(self.state, symbol)]
             
+            # Escribe el nuevo símbolo en la cinta
             if self.head < len(self.tape):
                 self.tape[self.head] = new_symbol
             else:
                 self.tape.append(new_symbol)
-
+            
+            # Mueve el cabezal según la dirección especificada
             if move == 'R':
                 self.head += 1
             elif move == 'L':
                 self.head -= 1
 
+            # Si el cabezal se mueve fuera del límite izquierdo, se ajusta la cinta
             if self.head < 0:
                 self.tape.insert(0, self.blank_symbol)
                 self.head = 0
@@ -47,6 +66,7 @@ class TuringMachine:
             self.state = self.reject_state
 
     def run(self):
+        # Ejecuta la máquina hasta llegar a un estado de aceptación o rechazo
         while self.state not in (self.accept_state, self.reject_state):
             self.step()
         return self.state == self.accept_state
@@ -55,13 +75,16 @@ class TuringMachine:
         tape_str = ''.join(self.tape)
         head_marker = ' ' * self.head + '^'
         print("Cinta:", tape_str)
-        print("       ", head_marker, f"(Estado: {self.state})")
-        print()
+        print("       ", head_marker, f"(Estado: {self.state})\n")
 
-# ---------------------------------------------------------------------
-# Máquina de Turing para la suma en notación unaria (método sencillo)
-# ---------------------------------------------------------------------
+# -----------------------------
+# Sección 3: Funciones de Operaciones Aritméticas
+# -----------------------------
 def addition_unary_machine(a, b):
+    """
+    Suma dos números representados en notación unaria.
+    La cinta tiene la forma: (a en '1's) + "0" + (b en '1's) + "="
+    """
     tape = decimal_a_unario(a) + "0" + decimal_a_unario(b) + "="
     transitions = {
         ('q0', '1'): ('q0', '1', 'R'),
@@ -71,13 +94,15 @@ def addition_unary_machine(a, b):
     }
     return TuringMachine(tape, transitions, 'q0', 'qAccept', 'qReject', blank_symbol='_')
 
-# ---------------------------------------------------------------------
-# Máquina de Turing para la resta en notación unaria (resta no negativa)
-# ---------------------------------------------------------------------
 def resta(x, y):
+    """
+    Realiza la resta no negativa en notación unaria (x - y).
+    Devuelve el resultado en unario y su longitud (decimal).
+    """
     if x < y:
         print("Error: resultado negativo no permitido.")
         return None
+
     tape = decimal_a_unario(x) + "-" + decimal_a_unario(y) + "="
     transitions = {
         ('q0', '1'): ('q0', '1', 'R'),
@@ -103,110 +128,30 @@ def resta(x, y):
     result_decimal = len(result_unary)
     return result_unary, result_decimal
 
-# ---------------------------------------------------------------------
-# Máquina de Turing para la multiplicación en notación unaria
-# ---------------------------------------------------------------------
 def multiplication_unary(a, b):
+    """
+    Multiplicación directa en unario (basada en el producto pre-calculado).
+    """
     tape = decimal_a_unario(a * b) + "="
     transitions = {
         ('q0', '1'): ('q0', '1', 'R'),
         ('q0', '='): ('qAccept', '=' , 'N')
     }
-    machine = TuringMachine(tape, transitions, 'q0', 'qAccept', 'qReject', blank_symbol='_')
-    machine.run()
-    final_tape = ''.join(machine.tape)
+    maquina = TuringMachine(tape, transitions, 'q0', 'qAccept', 'qReject', blank_symbol='_')
+    maquina.run()
+    final_tape = ''.join(maquina.tape)
     result_unary = final_tape.replace("=", "").replace("_", "")
     return result_unary, len(result_unary)
 
-# ---------------------------------------------------------------------
-# Máquina de Turing para la potenciación en notación unaria
-# (Calcula x^y mediante multiplicación repetida usando multiplication_unary)
-# ---------------------------------------------------------------------
-def power_unary(x, y):
-    if y == 0:
-        return "1", 1
-    result_unary = decimal_a_unario(x)
-    for _ in range(y - 1):
-        current_value = len(result_unary)
-        result_unary, _ = multiplication_unary(current_value, x)
-    return result_unary, len(result_unary)
-
-# ---------------------------------------------------------------------
-# Aproximación del logaritmo natural (ln) usando log₂(x)
-# ---------------------------------------------------------------------
-def log_unary(x):
-    """
-    Aproxima ln(x) (parte entera) de forma indirecta:
-      1. Calcula floor(log₂(x)) usando divisiones enteras (empleando Python).
-      2. Luego usa la relación ln(x) ≈ floor(log₂(x) * ln(2)), con ln(2) ≈ 0.693.
-    Se devuelve:
-      - La representación unaria de floor(log₂(x)).
-      - floor(log₂(x)) (valor entero).
-      - Aproximación entera de ln(x).
-    """
-    if x < 1:
-        return "", 0, 0
-    iterations = 0
-    n = x
-    while n >= 2:
-        n = n // 2
-        iterations += 1
-    iterations_unary = "1" * iterations
-    ln_approx = int(iterations * 0.693)
-    return iterations_unary, iterations, ln_approx
-
-def sin_unary(angle):
-
-    tape = decimal_a_unario(int(angle)) + "s" + "="
-    transitions = {
-        ('q0', '1'): ('q0', '1', 'R'),
-        ('q0', 's'): ('qAccept', 's', 'N'),
-        ('q0', '='): ('qAccept', '=', 'N'),
-    }
-    machine = TuringMachine(tape, transitions, 'q0', 'qAccept', 'qReject', blank_symbol='_')
-    machine.run()
-    
-    # Se devuelve 1 si el ángulo es múltiplo de 90°
-    return machine, 1 if int(angle) % 180 == 90 else 0
-
-def sqrt_turing_machine():
-    """
-    Calcula la raíz cuadrada entera de un número usando sumas sucesivas de impares.
-    Se representa en notación unaria y decimal.
-    """
-    number = int(input("Ingresa un número para calcular su raíz cuadrada: "))
-    count = 0
-    odd = 1  # Primer número impar
-    
-    while number >= odd:
-        number -= odd
-        count += 1
-        odd += 2  # Siguiente impar
-
-    # Representación en unario
-    tape = decimal_a_unario(count) + "="
-    transitions = {
-        ('q0', '1'): ('q0', '1', 'R'),
-        ('q0', '='): ('qAccept', '=', 'N'),
-    }
-    machine = TuringMachine(tape, transitions, 'q0', 'qAccept', 'qReject', blank_symbol='_')
-    machine.run()
-
-    # Imprime resultados
-    print("Raíz cuadrada en unario:", ''.join(machine.tape).replace("=", ""))
-    print("Raíz cuadrada en decimal:", count)
-
 def multiplication_unary_machine(a, b):
     """
-    Máquina de Turing para la multiplicación en notación unaria.
-    La multiplicación se realiza como sumas repetidas usando la máquina de Turing de suma.
+    Multiplicación en unario simulada como suma repetida usando una máquina de Turing.
     """
     if b == 0:
         return "", 0
-    
-    resultado = decimal_a_unario(a)
 
-    for _ in range(b - 1):  # Se repite la suma (b-1) veces
+    resultado = decimal_a_unario(a)
+    for _ in range(b - 1):
         tape = resultado + "0" + decimal_a_unario(a) + "="
         transitions = {
             ('q0', '1'): ('q0', '1', 'R'),
@@ -219,26 +164,100 @@ def multiplication_unary_machine(a, b):
             ('q3', '1'): ('q3', '1', 'R'),
             ('q3', '='): ('qAccept', '=', 'N'),
         }
-        machine = TuringMachine(tape, transitions, 'q0', 'qAccept', 'qReject', blank_symbol='_')
-        machine.run()
-        final_tape = ''.join(machine.tape)
+        maquina = TuringMachine(tape, transitions, 'q0', 'qAccept', 'qReject', blank_symbol='_')
+        maquina.run()
+        final_tape = ''.join(maquina.tape)
+        # Se remueven los separadores y símbolos innecesarios
         resultado = final_tape.replace("0", "").replace("=", "").replace("_", "")
-
     return resultado, len(resultado)
 
-#_____________________________________________________________________________
+def power_unary(x, y):
+    """
+    Calcula x^y mediante multiplicación repetida.
+    """
+    if y == 0:
+        return "1", 1
+    result_unary = decimal_a_unario(x)
+    for _ in range(y - 1):
+        current_value = len(result_unary)
+        result_unary, _ = multiplication_unary(current_value, x)
+    return result_unary, len(result_unary)
+
+def log_unary(x):
+    """
+    Aproxima ln(x) de forma indirecta:
+      1. Calcula floor(log₂(x)) mediante divisiones enteras.
+      2. Aproxima ln(x) como floor(log₂(x) * ln(2)), con ln(2) ≈ 0.693.
+      
+    Retorna:
+      - La representación en unario de floor(log₂(x)).
+      - El valor entero de floor(log₂(x)).
+      - La aproximación entera de ln(x).
+    """
+    if x < 1:
+        return "", 0, 0
+    iterations = 0
+    n = x
+    while n >= 2:
+        n = n // 2
+        iterations += 1
+    iterations_unary = decimal_a_unario(iterations)
+    ln_approx = int(iterations * 0.693)
+    return iterations_unary, iterations, ln_approx
+
+def sin_unary(angle):
+    """
+    Función seno simplificada en unario.
+    La máquina se basa en la entrada del ángulo y retorna 1 si es múltiplo de 90° (con un comportamiento
+    especial para 90° o 270°) o 0 en otro caso.
+    """
+    tape = decimal_a_unario(int(angle)) + "s" + "="
+    transitions = {
+        ('q0', '1'): ('q0', '1', 'R'),
+        ('q0', 's'): ('qAccept', 's', 'N'),
+        ('q0', '='): ('qAccept', '=', 'N'),
+    }
+    maquina = TuringMachine(tape, transitions, 'q0', 'qAccept', 'qReject', blank_symbol='_')
+    maquina.run()
+    # Retorna la máquina y 1 si el ángulo (en grados) es múltiplo de 90 (ajustado a un comportamiento simplificado)
+    return maquina, 1 if int(angle) % 180 == 90 else 0
+
+def sqrt_turing_machine():
+    """
+    Calcula la raíz cuadrada entera de un número usando sumas sucesivas de impares.
+    Imprime el resultado en notación unaria y en decimal.
+    """
+    number = int(input("Ingresa un número para calcular su raíz cuadrada: "))
+    count = 0
+    odd = 1  # Primer número impar
+
+    while number >= odd:
+        number -= odd
+        count += 1
+        odd += 2  # Siguiente número impar
+
+    tape = decimal_a_unario(count) + "="
+    transitions = {
+        ('q0', '1'): ('q0', '1', 'R'),
+        ('q0', '='): ('qAccept', '=', 'N'),
+    }
+    maquina = TuringMachine(tape, transitions, 'q0', 'qAccept', 'qReject', blank_symbol='_')
+    maquina.run()
+
+    print("Raíz cuadrada en unario:", ''.join(maquina.tape).replace("=", ""))
+    print("Raíz cuadrada en decimal:", count)
 
 def division_unary(a, b):
     """
-    Calcula el cociente de a // b en notación unaria mediante resta repetida.
+    Calcula el cociente de a // b en notación unaria mediante restas repetidas.
     
     Parámetros:
       a: Dividendo (entero positivo).
-      b: Divisor (entero positivo distinto de 0).
-
+      b: Divisor (entero positivo, distinto de 0).
+    
     Retorna:
       - El cociente en notación unaria.
-      - Su longitud (el resultado en decimal).
+      - Su valor decimal (longitud de la cadena unaria).
     """
     if b == 0:
         print("Error: División por cero.")
@@ -246,100 +265,100 @@ def division_unary(a, b):
 
     dividend = a
     quotient = ""
-
     while dividend >= b:
         resta_result = resta(dividend, b)
         if resta_result is None:
             break
-
-        result_unary, new_dividend = resta_result  # Obtener el nuevo dividendo
+        _, new_dividend = resta_result
         dividend = new_dividend
-        quotient += "1"  # Cada resta representa una unidad en el cociente
-
+        quotient += "1"
     return quotient, len(quotient)
 
+# -----------------------------
+# Sección 4: Función Principal
+# -----------------------------
+def main():
+    print("=== Operaciones en Notación Unaria utilizando Máquina de Turing ===\n")
 
-
-
-# ---------------------------------------------------------------------
-# Main: Ejecución de las operaciones
-# ---------------------------------------------------------------------
-if __name__ == "__main__":
-    print("=== Operaciones en notación unaria utilizando Máquina de Turing ===")
-
-    # Prueba de la suma
-    print("\nMáquina de Turing para Suma en notación unaria:")
+    # Suma
+    print(">> Suma en Notación Unaria:")
     a = int(input("Ingrese el primer número (entero positivo): "))
     b = int(input("Ingrese el segundo número (entero positivo): "))
-    machine = addition_unary_machine(a, b)
-    accepted = machine.run()
-    final_tape = ''.join(machine.tape)
-    result_unary = final_tape.replace("_", "")
-    result_decimal = len(result_unary)
-    if accepted:
-        print("Cinta final:", final_tape)
-        print("Resultado en notación unaria:", result_unary)
-        print("Resultado en decimal:", result_decimal)
+    maquina_suma = addition_unary_machine(a, b)
+    if maquina_suma.run():
+        cinta_final = ''.join(maquina_suma.tape)
+        resultado_unario = cinta_final.replace("_", "")
+        print("Cinta final:", cinta_final)
+        print("Resultado en notación unaria:", resultado_unario)
+        print("Resultado en decimal:", len(resultado_unario))
     else:
         print("La máquina rechazó la entrada.")
+    print("\n" + "-"*50 + "\n")
 
-    # Prueba de la resta
-    print("\nMáquina de Turing para Resta en notación unaria:")
+    # Resta
+    print(">> Resta en Notación Unaria:")
     x = int(input("Ingrese el minuendo (entero positivo): "))
     y = int(input("Ingrese el sustraendo (entero positivo): "))
-    resta_result = resta(x, y)
-    if resta_result is not None:
-        result_unary, result_decimal = resta_result
-        print("Resultado en notación unaria:", result_unary)
-        print("Resultado en decimal:", result_decimal)
+    resultado_resta = resta(x, y)
+    if resultado_resta:
+        resultado_unario, resultado_decimal = resultado_resta
+        print("Resultado en notación unaria:", resultado_unario)
+        print("Resultado en decimal:", resultado_decimal)
+    print("\n" + "-"*50 + "\n")
 
-    # Prueba de la multiplicación
-    print("\nMáquina de Turing para Multiplicación en notación unaria:")
+    # Multiplicación
+    print(">> Multiplicación en Notación Unaria (suma repetida):")
     a = int(input("Ingrese el primer número (entero positivo): "))
     b = int(input("Ingrese el segundo número (entero positivo): "))
-    unary_result, decimal_result = multiplication_unary_machine(a, b)
-    print(f"Resultado en notación unaria: {unary_result}")
-    print(f"Resultado en decimal: {decimal_result}")
+    resultado_unario, resultado_decimal = multiplication_unary_machine(a, b)
+    print("Resultado en notación unaria:", resultado_unario)
+    print("Resultado en decimal:", resultado_decimal)
+    print("\n" + "-"*50 + "\n")
 
-    # Prueba de la división
-    print("\nMáquina de Turing para División en notación unaria:")
+    # División
+    print(">> División en Notación Unaria:")
     try:
         a = int(input("Ingrese el numerador (entero positivo): "))
         b = int(input("Ingrese el denominador (entero positivo distinto de 0): "))
-
         if a < 1 or b < 1:
             print("Solo se permiten números enteros positivos.")
         else:
-            q, q_len = division_unary(a, b)
-            if q is not None:
-                print("Cociente en notación unaria:", q)
-                print("Cociente en decimal:", q_len)
+            q_unario, q_decimal = division_unary(a, b)
+            if q_unario is not None:
+                print("Cociente en notación unaria:", q_unario)
+                print("Cociente en decimal:", q_decimal)
     except ValueError:
         print("Entrada inválida. Debe ser un número entero.")
+    print("\n" + "-"*50 + "\n")
 
-    # Prueba de la potenciación
-    print("\nMáquina de Turing para Potenciación en notación unaria:")
+    # Potenciación
+    print(">> Potenciación en Notación Unaria:")
     base = int(input("Ingrese la base (entero positivo): "))
     exp = int(input("Ingrese el exponente (entero no negativo): "))
-    power_result, power_decimal = power_unary(base, exp)
-    print("Resultado en notación unaria:", power_result)
-    print("Resultado en decimal:", power_decimal)
+    resultado_unario, resultado_decimal = power_unary(base, exp)
+    print("Resultado en notación unaria:", resultado_unario)
+    print("Resultado en decimal:", resultado_decimal)
+    print("\n" + "-"*50 + "\n")
 
-    # Prueba de la función log_unary (aproximación de ln(x))
-    print("\nAproximación del Logaritmo Natural (ln) en notación unaria:")
+    # Logaritmo Natural Aproximado
+    print(">> Aproximación del Logaritmo Natural (ln) en Notación Unaria:")
     x_val = int(input("Ingrese un número (entero positivo mayor o igual a 1): "))
-    log2_unario, log2_value, ln_approx = log_unary(x_val)
-    print("Representación unaria de floor(log₂(x)):", log2_unario, "-> valor =", log2_value)
+    log_unario, log_val, ln_approx = log_unary(x_val)
+    print("Representación unaria de floor(log₂(x)):", log_unario, "-> valor =", log_val)
     print("Aproximación entera de ln(x):", ln_approx)
+    print("\n" + "-"*50 + "\n")
 
-    # Prueba de la función sin_unary
-    print("\nMáquina de Turing para la Función Seno en notación unaria (versión simplificada):")
+    # Función Seno Simplificada
+    print(">> Función Seno en Notación Unaria (versión simplificada):")
     angle = float(input("Ingrese un ángulo en grados (número positivo): "))
-    sin_machine, sin_value = sin_unary(angle)
-    final_tape = ''.join(sin_machine.tape)
-    print("Cinta final:", final_tape)
+    maquina_sin, sin_value = sin_unary(angle)
+    print("Cinta final:", ''.join(maquina_sin.tape))
     print("Valor de sin(angle):", sin_value)
+    print("\n" + "-"*50 + "\n")
 
-    # Prueba de la función raíz cuadrada
-    print("\nMáquina de Turing para la Raíz Cuadrada:")
+    # Raíz Cuadrada
+    print(">> Raíz Cuadrada (cálculo mediante sumas de impares):")
     sqrt_turing_machine()
+
+if __name__ == "__main__":
+    main()
